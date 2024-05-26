@@ -1,32 +1,30 @@
-/**
- * Welcome to Cloudflare Workers! This is your first worker.
- *
- * - Run `npm run dev` in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your worker in action
- * - Run `npm run deploy` to publish your worker
- *
- * Learn more at https://developers.cloudflare.com/workers/
- */
+import { HookPost, HookGet } from './hooks';
+import { PipeGet, PipePost } from './pipes';
+import { OpenAPIRouter } from '@cloudflare/itty-router-openapi';
 
 export interface Env {
-	// Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
-	// MY_KV_NAMESPACE: KVNamespace;
-	//
-	// Example binding to Durable Object. Learn more at https://developers.cloudflare.com/workers/runtime-apis/durable-objects/
-	// MY_DURABLE_OBJECT: DurableObjectNamespace;
-	//
-	// Example binding to R2. Learn more at https://developers.cloudflare.com/workers/runtime-apis/r2/
-	// MY_BUCKET: R2Bucket;
-	//
-	// Example binding to a Service. Learn more at https://developers.cloudflare.com/workers/runtime-apis/service-bindings/
-	// MY_SERVICE: Fetcher;
-	//
-	// Example binding to a Queue. Learn more at https://developers.cloudflare.com/queues/javascript-apis/
-	// MY_QUEUE: Queue;
+	DB: D1Database;
 }
 
-export default {
-	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-		return new Response('Hello World!');
+const router = OpenAPIRouter({
+	schema: {
+		info: {
+			title: 'Pipe Worker OpenAPI',
+			version: '1.0',
+		},
 	},
-};
+});
+
+router.post('hooks/:hookUrl', HookPost);
+router.get('hooks/:hookId', HookGet);
+
+router.post('/pipes/:pipeUrl', PipePost);
+router.get('/pipes/:pipeId', PipeGet);
+
+router.post(':hookUrl', HookPost);
+router.get(':hookId', HookGet);
+router.all('*', () => new Response('404, not found!', { status: 404 }));
+
+export default {
+	fetch: router.handle,
+} satisfies ExportedHandler<Env>;

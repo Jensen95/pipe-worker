@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Hook {
+  id            String         @id
+  calledAt      DateTime       @default(now())
+  headers       String
+  body          String?
+  collectionUrl String
+  collection    HookCollection @relation(fields: [collectionUrl], references: [url])
+  pipeId        String?        @unique
+  Pipe          Pipe?          @relation(fields: [pipeId], references: [id])
+}
+
+model HookCollection {
+  url   String @unique
+  hooks Hook[]
+  Pipe  Pipe[]
+}
+
+model Pipe {
+  id                String          @id
+  response          String?
+  responseHeaders   String
+  statusCode        Int?
+  callTimestamp     DateTime        @default(now())
+  responseTimestamp DateTime?
+  url               String
+  hook              Hook?
+  collectionUrl     String
+  collection        HookCollection  @relation(fields: [collectionUrl], references: [url])
+  PipeCollection    PipeCollection? @relation(fields: [pipeCollectionUrl], references: [url])
+  pipeCollectionUrl String?
+}
+
+model PipeCollection {
+  url   String @unique
+  pipes Pipe[]
+}
