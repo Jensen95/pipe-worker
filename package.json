@@ -12,7 +12,7 @@
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20231016.0",
-		"prisma": "^5.13.0",
+		"prisma": "^6.3.1",
 		"typescript": "^5.0.4",
 		"wrangler": "^3.0.0"
 	},
